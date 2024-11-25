@@ -10,7 +10,7 @@ const paramsSchema = z.strictObject({
   api_key: z.string(),
   root: z.string(),
   paths: z.string(),
-  runtime: z.enum(["node", "python"]),
+  runtime: z.enum(["node", "python", "loancrate"]),
   use_proxy: z
     .string()
     .toLowerCase()
