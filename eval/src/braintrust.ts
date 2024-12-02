@@ -12,10 +12,6 @@ export interface ExperimentFailure {
 
 type OnSummaryFn = (summary: (ExperimentSummary | ExperimentFailure)[]) => void;
 
-function snakeToCamelCase(str: string) {
-  return str.replace(/([-_][a-z])/g, group => group.charAt(1).toUpperCase());
-}
-
 async function runCommand(command: string, onSummary: OnSummaryFn) {
   return new Promise((resolve, reject) => {
     const stdout = execSync(command);
@@ -40,7 +36,13 @@ async function runCommand(command: string, onSummary: OnSummaryFn) {
 }
 
 export async function runEval(args: Params, onSummary: OnSummaryFn) {
-  const { api_key, root, paths } = args;
+  const {
+    api_key,
+    root,
+    paths,
+    baseline_experiment_name,
+    baseline_project_id,
+  } = args;
 
   // Add the API key to the environment
   core.exportVariable("BRAINTRUST_API_KEY", api_key);
@@ -59,7 +61,7 @@ export async function runEval(args: Params, onSummary: OnSummaryFn) {
   let command: string;
   switch (args.runtime) {
     case "loancrate":
-      command = `tsx -r dotenv/config -r ./transform-env-vars.js -- src/document-validations/__evals__/extractions.eval.ts`;
+      command = `tsx -r dotenv/config -r ./transform-env-vars.js -- ${paths} -c --baseline_experiment_name ${baseline_experiment_name} --baseline_project_id = ${baseline_project_id}`;
       break;
     case "node":
       command = `npx braintrust eval --jsonl ${paths}`;
