@@ -1,6 +1,6 @@
 import path from "path";
 import * as core from "@actions/core";
-import { execSync } from "child_process";
+import { exec as execSync } from "child_process";
 
 import { Params } from "./main";
 import { ExperimentSummary } from "braintrust";
@@ -12,26 +12,50 @@ export interface ExperimentFailure {
 
 type OnSummaryFn = (summary: (ExperimentSummary | ExperimentFailure)[]) => void;
 
+function snakeToCamelCase(str: string) {
+  return str.replace(/([-_][a-z])/g, group => group.charAt(1).toUpperCase());
+}
+
 async function runCommand(command: string, onSummary: OnSummaryFn) {
   return new Promise((resolve, reject) => {
-    const stdout = execSync(command);
+    const process = execSync(command);
 
-    const result = stdout.toString();
-    core.info(result);
+    process.stdout?.on("data", (text: string) => {
+      onSummary(
+        text
+          .split("\n")
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+          .flatMap(line => {
+            try {
+              const parsedLine = JSON.parse(line);
+              const camelCaseLine = Object.fromEntries(
+                Object.entries(parsedLine).map(([key, value]) => [
+                  snakeToCamelCase(key),
+                  value,
+                ]),
+              );
+              // TODO: This is hacky and we should be parsing what comes off the wire
+              return [camelCaseLine as unknown as ExperimentSummary];
+            } catch (e) {
+              core.error(`Failed to parse jsonl data: ${e}`);
+              return [];
+            }
+          }),
+      );
+    });
 
-    try {
-      const json = JSON.parse(result);
+    process.stderr?.on("data", data => {
+      core.info(data); // Outputs the stderr of the command
+    });
 
-      core.info(json);
-      onSummary([json as unknown as ExperimentSummary]);
-
-      resolve(null);
-    } catch (err) {
-      core.error(`Failed to parse json: ${err}`);
-      core.error(result);
-      reject(err);
-      return [];
-    }
+    process.on("close", code => {
+      if (code === 0) {
+        resolve(null);
+      } else {
+        reject(new Error(`Command failed with exit code ${code}`));
+      }
+    });
   });
 }
 
