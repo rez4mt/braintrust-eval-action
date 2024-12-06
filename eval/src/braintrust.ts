@@ -66,6 +66,7 @@ export async function runEval(args: Params, onSummary: OnSummaryFn) {
     paths,
     baseline_experiment_name,
     baseline_project_id,
+    experiment_name,
   } = args;
 
   // Add the API key to the environment
@@ -85,7 +86,10 @@ export async function runEval(args: Params, onSummary: OnSummaryFn) {
   let command: string;
   switch (args.runtime) {
     case "loancrate":
-      command = `tsx -r dotenv/config -r ./transform-env-vars.js -- ${paths} -c --baseline_experiment_name ${baseline_experiment_name} --baseline_project_id = ${baseline_project_id}`;
+      command = `tsx -r dotenv/config -r ./transform-env-vars.js -- ${paths} -c --baseline_experiment_name ${baseline_experiment_name} --baseline_project_id ${baseline_project_id}`;
+      if (experiment_name) {
+        command += ` --experiment_name ${experiment_name}`;
+      }
       break;
     case "node":
       command = `npx braintrust eval --jsonl ${paths}`;

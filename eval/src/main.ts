@@ -18,6 +18,7 @@ const paramsSchema = z.strictObject({
     .pipe(z.boolean()),
   baseline_experiment_name: z.string(),
   baseline_project_id: z.string(),
+  experiment_name: z.string(),
 });
 export type Params = z.infer<typeof paramsSchema>;
 
@@ -36,6 +37,7 @@ async function main(): Promise<void> {
     use_proxy: core.getInput("use_proxy"),
     baseline_experiment_name: core.getInput("baseline_experiment_name"),
     baseline_project_id: core.getInput("baseline_project_id"),
+    experiment_name: core.getInput("experiment_name"),
   });
   if (!args.success) {
     throw new Error(

@@ -39,6 +39,12 @@ inputs:
       what you're doing."
     required: true
     default: ${{ github.workflow_ref }}-${{ github.action }}
+  baseline_experiment_name:
+    description: "The baseline experiment to reference in the evaluation."
+  baseline_project_id:
+    description: "The baseline project id to reference in the evaluation."
+  experiment_name:
+    description: "The experiment name to use in the evaluation."
 
 runs:
   using: node20
