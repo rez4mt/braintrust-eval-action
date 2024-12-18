@@ -51,18 +51,18 @@ async function main(): Promise<void> {
     );
   }
 
-  await upsertComment(`${TITLE}Evals in progress... ⌛`);
+  // await upsertComment(`${TITLE}Evals in progress... ⌛`);
 
-  try {
-    await runEval(args.data, onSummary);
-    // await runUpdateComments(true);
-  } catch (error) {
-    core.error(`Eval command failed: ${error}`);
-    await upsertComment(`${TITLE}Evals failed: ${error}`);
-    throw error;
-  } finally {
-    await currentUpdate;
-  }
+  // try {
+  //   await runEval(args.data, onSummary);
+  //   // await runUpdateComments(true);
+  // } catch (error) {
+  //   core.error(`Eval command failed: ${error}`);
+  //   await upsertComment(`${TITLE}Evals failed: ${error}`);
+  //   throw error;
+  // } finally {
+  //   await currentUpdate;
+  // }
 }
 
 const allSummaries: (ExperimentSummary | ExperimentFailure)[] = [];
