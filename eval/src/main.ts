@@ -19,6 +19,11 @@ const paramsSchema = z.strictObject({
   baseline_experiment_name: z.string(),
   baseline_project_id: z.string(),
   experiment_name: z.string(),
+  update_baseline: z
+    .string()
+    .toLowerCase()
+    .transform(x => JSON.parse(x))
+    .pipe(z.boolean()),
 });
 export type Params = z.infer<typeof paramsSchema>;
 
@@ -38,6 +43,7 @@ async function main(): Promise<void> {
     baseline_experiment_name: core.getInput("baseline_experiment_name"),
     baseline_project_id: core.getInput("baseline_project_id"),
     experiment_name: core.getInput("experiment_name"),
+    update_baseline: core.getInput("update_baseline"),
   });
   if (!args.success) {
     throw new Error(
@@ -53,7 +59,7 @@ async function main(): Promise<void> {
   } catch (error) {
     core.error(`Eval command failed: ${error}`);
     await upsertComment(`${TITLE}Evals failed: ${error}`);
-    // throw error;
+    throw error;
   } finally {
     await currentUpdate;
   }
@@ -195,6 +201,6 @@ export async function run(): Promise<void> {
   try {
     await main();
   } catch (error) {
-    core.setFailed(`${error}`);
+    // core.setFailed(`${error}`);
   }
 }
