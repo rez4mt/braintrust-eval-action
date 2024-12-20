@@ -19,11 +19,7 @@ const paramsSchema = z.strictObject({
   baseline_experiment_name: z.string(),
   baseline_project_id: z.string(),
   experiment_name: z.string(),
-  update_baseline: z
-    .string()
-    .toLowerCase()
-    .transform(x => JSON.parse(x))
-    .pipe(z.boolean()),
+  update_baseline: z.string(),
 });
 export type Params = z.infer<typeof paramsSchema>;
 

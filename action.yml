@@ -46,8 +46,8 @@ inputs:
   experiment_name:
     description: "The experiment name to use in the evaluation."
   update_baseline:
-    description: "Update the baseline experiment name or not"
-    default: "false"
+    description: "Update the baseline experiment name using the provided token"
+    default: ""
 
 runs:
   using: node20
