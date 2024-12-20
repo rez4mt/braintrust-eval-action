@@ -92,7 +92,7 @@ export async function runEval(args: Params, onSummary: OnSummaryFn) {
         command += ` --experiment_name ${experiment_name}`;
       }
       if (update_baseline) {
-        command += ` --update_baseline --github_token ${core.getInput("github_token")}`;
+        command += ` --update_baseline ${core.getInput("github_token")}`;
       }
       break;
     case "node":
