@@ -68,6 +68,7 @@ export async function runEval(args: Params, onSummary: OnSummaryFn) {
     baseline_project_id,
     experiment_name,
     update_baseline,
+    github_token,
   } = args;
 
   // Add the API key to the environment
@@ -90,6 +91,9 @@ export async function runEval(args: Params, onSummary: OnSummaryFn) {
       command = `tsx -r dotenv/config -r ./transform-env-vars.js -- ${paths} -c --baseline_experiment_name ${baseline_experiment_name} --baseline_project_id ${baseline_project_id}`;
       if (experiment_name) {
         command += ` --experiment_name ${experiment_name}`;
+      }
+      if (github_token) {
+        command += ` --github_token ${github_token}`;
       }
       if (update_baseline) {
         command += " --update_baseline";

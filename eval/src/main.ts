@@ -24,6 +24,7 @@ const paramsSchema = z.strictObject({
     .toLowerCase()
     .transform(x => JSON.parse(x))
     .pipe(z.boolean()),
+  github_token: z.string(),
 });
 export type Params = z.infer<typeof paramsSchema>;
 
@@ -44,6 +45,7 @@ async function main(): Promise<void> {
     baseline_project_id: core.getInput("baseline_project_id"),
     experiment_name: core.getInput("experiment_name"),
     update_baseline: core.getInput("update_baseline"),
+    github_token: core.getInput("github_token"),
   });
   if (!args.success) {
     throw new Error(
