@@ -128,11 +128,15 @@ ${errors}
 }
 
 function formatSummary(summary: ExperimentSummary) {
-  const text = `**[${summary.projectName} (${summary.experimentName})](${summary.experimentUrl})**`;
-
-  if (!summary) {
-    return text;
+  if (
+    !summary.projectName ||
+    !summary.experimentName ||
+    !summary.experimentUrl
+  ) {
+    return `Error: Could not find projectName, experimentName, or experimentUrl in summary, received: ${JSON.stringify(summary)}`;
   }
+
+  const text = `**[${summary.projectName} (${summary.experimentName})](${summary.experimentUrl})**`;
 
   if (!summary.scores) {
     return text;
