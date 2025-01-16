@@ -1,7 +1,7 @@
 import path from "path";
 import * as core from "@actions/core";
 import { exec as execSync } from "child_process";
-
+import { z } from "zod";
 import { Params } from "./main";
 import { ExperimentSummary } from "braintrust";
 
@@ -12,37 +12,69 @@ export interface ExperimentFailure {
 
 type OnSummaryFn = (summary: (ExperimentSummary | ExperimentFailure)[]) => void;
 
-function snakeToCamelCase(str: string) {
-  return str.replace(/([-_][a-z])/g, group => group.charAt(1).toUpperCase());
-}
+const scoreSummarySchema = z.object({
+  name: z.string(),
+  score: z.number(),
+  diff: z.number().optional(),
+  improvements: z.number().optional(),
+  regressions: z.number().optional(),
+});
+
+const metricSummarySchema = z.object({
+  name: z.string(),
+  metric: z.number(),
+  unit: z.string(),
+  diff: z.number(),
+  improvements: z.number(),
+  regressions: z.number(),
+});
+
+const experimentSummarySchema = z.object({
+  projectName: z.string(),
+  experimentName: z.string(),
+  projectUrl: z.string().optional(),
+  experimentUrl: z.string().optional(),
+  comparisonExperimentName: z.string().optional(),
+  scores: z.record(scoreSummarySchema),
+  metrics: z.record(metricSummarySchema).optional(),
+});
+
+const experimentFailureSchema = z.object({
+  evaluatorName: z.string(),
+  errors: z.array(z.string()),
+});
 
 async function runCommand(command: string, onSummary: OnSummaryFn) {
   return new Promise((resolve, reject) => {
     const process = execSync(command);
 
     process.stdout?.on("data", (text: string) => {
-      onSummary(
-        text
-          .split("\n")
-          .map(line => line.trim())
-          .filter(line => line.length > 0)
-          .flatMap(line => {
-            try {
-              const parsedLine = JSON.parse(line);
-              const camelCaseLine = Object.fromEntries(
-                Object.entries(parsedLine).map(([key, value]) => [
-                  snakeToCamelCase(key),
-                  value,
-                ]),
-              );
-              // TODO: This is hacky and we should be parsing what comes off the wire
-              return [camelCaseLine as unknown as ExperimentSummary];
-            } catch (e) {
-              core.error(`Failed to parse jsonl data: ${e}`);
-              return [];
+      const parsedResult = text
+        .split("\n")
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .flatMap(line => {
+          try {
+            const parsedLine = JSON.parse(line);
+
+            if (experimentSummarySchema.safeParse(parsedLine).success) {
+              return [parsedLine];
             }
-          }),
-      );
+
+            if (experimentFailureSchema.safeParse(parsedLine).success) {
+              return [parsedLine];
+            }
+            core.info(line);
+            return [];
+          } catch (e) {
+            core.error(`Failed to parse jsonl data: ${e}`);
+            return [];
+          }
+        });
+
+      if (parsedResult.length > 0) {
+        onSummary(parsedResult);
+      }
     });
 
     process.stderr?.on("data", data => {
