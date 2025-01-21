@@ -23,10 +23,10 @@ const scoreSummarySchema = z.object({
 const metricSummarySchema = z.object({
   name: z.string(),
   metric: z.number(),
-  unit: z.string(),
-  diff: z.number(),
-  improvements: z.number(),
-  regressions: z.number(),
+  unit: z.string().optional(),
+  diff: z.number().optional(),
+  improvements: z.number().optional(),
+  regressions: z.number().optional(),
 });
 
 const experimentSummarySchema = z.object({
@@ -35,7 +35,7 @@ const experimentSummarySchema = z.object({
   projectUrl: z.string().optional(),
   experimentUrl: z.string().optional(),
   comparisonExperimentName: z.string().optional(),
-  scores: z.record(scoreSummarySchema),
+  scores: z.record(scoreSummarySchema).optional(),
   metrics: z.record(metricSummarySchema).optional(),
 });
 
