@@ -119,7 +119,7 @@ export async function runEval(args: Params, onSummary: OnSummaryFn) {
   let command: string;
   switch (args.runtime) {
     case "loancrate":
-      command = `tsx -r dotenv/config -r ./transform-env-vars.js -- ${paths} -c --baseline_experiment_name ${baseline_experiment_name} --baseline_project_id ${baseline_project_id}`;
+      command = `NODE_OPTIONS=--max-old-space-size=2048 tsx -r dotenv/config -r ./transform-env-vars.js -- ${paths} -c --baseline_experiment_name ${baseline_experiment_name} --baseline_project_id ${baseline_project_id}`;
       if (experiment_name) {
         command += ` --experiment_name ${experiment_name}`;
       }
